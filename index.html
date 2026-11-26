@@ -44,7 +44,7 @@ button.g{background:transparent;color:var(--mu);border:1px solid var(--bd)}
 <h1>💰 আমানত ও ওয়াইফাই হিসাব</h1>
 <div class="seg"><button id="td" class="on" onclick="tab('d')">💰 আমানত</button><button id="tw" onclick="tab('w')">📶 ওয়াইফাই বিল</button></div>
 <div id="dep"><div class="hero"><small>মোট আমানত (আমার কাছে জমা)</small><b id="tot">৳০</b>
-<div class="row"><div>ব্যক্তি<b id="cnt">০</b></div><div>আজ জমা<b id="tin">৳০</b></div><div>আজ উত্তোলন<b id="tout">৳০</b></div></div></div>
+<div class="row"><div>ব্যক্তি<b id="cnt">০</b></div><div>আজ জমা<b id="tin">৳০</b></div><div>আজ উত্তোলন<b id="tout">৳০</b></div></div><div class="row"><div>ফেরত বাকি (ঋণ ও আমার নেওয়া)<b id="tloan">৳০</b></div></div></div>
 <div id="demo" class="demo" style="display:none"><span>এটি নমুনা তথ্য। নিজের হিসাব শুরু করতে আগে এটি মুছুন।</span><button class="g" onclick="clearAll()">মুছে নিজের শুরু করুন</button></div>
 <input id="q" placeholder="🔍 নাম দিয়ে খুঁজুন" oninput="render()">
 <div id="list"></div></div>
@@ -67,20 +67,20 @@ function save(){bkSoon();try{localStorage.setItem('amanot',JSON.stringify(S))}ca
 function load(){try{const v=localStorage.getItem('amanot');if(v){S=JSON.parse(v);return}}catch(e){}
  const t=today();
  S={demo:true,people:[
- {id:1,name:'রহিম উদ্দিন',phone:'01711000000',tx:[{id:1,t:'d',a:50000,d:'2026-10-02',n:'প্রথম জমা'},{id:2,t:'w',a:12000,d:'2026-10-25',n:'বাড়ি ভাড়া'},{id:3,t:'d',a:5000,d:t,n:'বেতন থেকে'}]},
+ {id:1,name:'লিটন',phone:'',tx:[{id:1,t:'d',a:49075,g:50000,c:925,d:'2026-11-01',m:'বিকাশ',n:'প্রথম জমা'},{id:2,t:'l',a:10000,who:'লিটনের বউ',k:'f',d:'2026-11-02',m:'বিকাশ',n:''},{id:3,t:'l',a:15000,who:'রহিম',k:'l',d:'2026-11-10',m:'ক্যাশ',n:'ঋণ'},{id:4,t:'w',a:5000,d:'2026-11-15',m:'বিকাশ',n:'নিজে তুলেছেন'},{id:5,t:'r',a:5000,who:'রহিম',lid:3,d:'2026-11-20',m:'নগদ',n:'আংশিক ফেরত'},{id:6,t:'l',a:3000,who:'আমি (বাজার খরচ)',k:'m',d:'2026-11-22',m:'ক্যাশ',n:'পরে জমা দিব'}]},
  {id:2,name:'করিম সাহেব',phone:'01822000000',tx:[{id:4,t:'d',a:100000,d:'2026-09-15',n:'ব্যবসার টাকা'},{id:5,t:'w',a:30000,d:'2026-11-10',n:'মাল কেনা'}]},
  {id:3,name:'সালমা বেগম',phone:'',tx:[{id:6,t:'d',a:20000,d:'2026-11-01',n:''},{id:7,t:'w',a:20000,d:t,n:'সব তুলে নিলেন'}]}]};}
-const bal=p=>p.tx.reduce((s,x)=>s+(x.t==='d'?x.a:-x.a),0);
+
 function render(){
  const q=document.getElementById('q').value.trim();
  const ps=S.people.filter(p=>p.name.includes(q));
- let tin=0,tout=0;S.people.forEach(p=>p.tx.forEach(x=>{if(x.d===today())x.t==='d'?tin+=x.a:tout+=x.a}));
+ let tin=0,tout=0;S.people.forEach(p=>p.tx.forEach(x=>{if(x.d===today())(x.t==='d'||x.t==='r')?tin+=x.a:tout+=x.a}));
  document.getElementById('tot').textContent=tk(S.people.reduce((s,p)=>s+bal(p),0));
- document.getElementById('cnt').textContent=bn(S.people.length);
+ document.getElementById('cnt').textContent=bn(S.people.length);$('tloan').textContent=tk(S.people.reduce((a,p)=>a+oweP(p),0));
  document.getElementById('tin').textContent=tk(tin);document.getElementById('tout').textContent=tk(tout);
  document.getElementById('demo').style.display=S.demo?'flex':'none';
  document.getElementById('list').innerHTML=ps.map(p=>{const l=p.tx[p.tx.length-1];
- return `<div class="card" onclick="openP(${p.id})"><div><div class="n">${esc(p.name)}</div><div class="s">${l?'সর্বশেষ: '+fd(l.d):'লেনদেন নেই'}</div></div><div class="amt">${tk(bal(p))}</div></div>`}).join('')||'<p style="color:var(--mu);text-align:center;margin-top:30px">কাউকে পাওয়া যায়নি</p>';
+ return `<div class="card" onclick="openP(${p.id})"><div><div class="n">${esc(p.name)}</div><div class="s">${l?'সর্বশেষ: '+fd(l.d):'লেনদেন নেই'}${oweP(p)?' · ঋণ বাইরে '+tk(oweP(p)):''}</div></div><div class="amt">${tk(bal(p))}</div></div>`}).join('')||'<p style="color:var(--mu);text-align:center;margin-top:30px">কাউকে পাওয়া যায়নি</p>';
 }
 function closeS(){document.getElementById('sh').classList.remove('on')}
 function show(h){document.getElementById('pn').innerHTML=h;document.getElementById('sh').classList.add('on')}
@@ -90,21 +90,27 @@ function addP(){const n=document.getElementById('nn').value.trim();if(!n)return;
 function openP(id){cur=S.people.find(p=>p.id===id);mode='d';drawP()}
 function drawP(){const p=cur;
  show(`<div style="display:flex;justify-content:space-between"><h1>${esc(p.name)}</h1><button class="g" onclick="closeS()">✕</button></div>
- <div class="hero"><small>বর্তমান জমা</small><b>${tk(bal(p))}</b></div>
- <div class="tabs"><button class="${mode==='d'?'':'g'}" onclick="mode='d';drawP()">＋ জমা</button><button class="${mode==='w'?'':'g'}" onclick="mode='w';drawP()">− উত্তোলন</button></div>
- <input id="ta" type="number" inputmode="numeric" placeholder="টাকার পরিমাণ"><input id="tn" placeholder="নোট (ঐচ্ছিক)">
+ <div class="hero"><small>বর্তমান জমা</small><b>${tk(bal(p))}</b></div>${sumHtml(p)}
+ ${p.tx.some(x=>x.t==='l'&&x.k!=='f'&&outs(p,x)>0)?`<div class="demo" style="flex-direction:column;align-items:stretch"><b style="font-size:14px">ফেরত বাকি (ঋণ ও আমার নেওয়া)</b>${p.tx.filter(x=>x.t==='l'&&x.k!=='f'&&outs(p,x)>0).map(x=>`<div class="tx"><div>${esc(x.who)}${x.k==='m'?' <small>(আমার নেওয়া)</small>':''}<span>${fd(x.d)} · মোট ${tk(x.a)}</span></div><div><b class="out">${tk(outs(p,x))}</b> <button style="padding:6px 10px;font-size:13px" onclick="openRep(${x.id})">${x.k==='m'?'জমা দিলাম':'ফেরত পেলাম'}</button></div></div>`).join('')}</div>`:''}
+ <div class="tabs"><button class="${mode==='d'?'':'g'}" onclick="mode='d';drawP()">＋ জমা</button><button class="${mode==='w'?'':'g'}" onclick="mode='w';drawP()">− উত্তোলন</button><button class="${mode==='l'?'':'g'}" onclick="mode='l';drawP()">🤝 অন্যে নিল</button></div>
+ ${mode==='l'?`<input id="twho" list="tkl" placeholder="কে নিল (নাম)"><datalist id="tkl">${TK()}</datalist><select id="tkind"><option value="l">অন্য কেউ ঋণ নিল (ফেরত দেবে)</option><option value="m">আমি/আমার পরিবার নিলাম (পরে ${esc(cur.name)}-এর হিসাবে জমা দেব)</option><option value="f">${esc(cur.name)}-এর পরিবার, যেমন বউ (ফেরত নয়)</option></select>`:''}<input id="ta" type="number" inputmode="decimal" placeholder="টাকার পরিমাণ" oninput="fee()"><small style="color:var(--mu)">তারিখ ও পেমেন্টের মাধ্যম</small><input id="tdt" type="date" value="${today()}"><select id="tmd" onchange="fee()">${MET}</select>${mode==='d'?`<label style="display:block;margin-top:8px;font-size:14px"><input id="tbk" type="checkbox" style="width:auto;margin:0 6px 0 0" checked onchange="fee()">বিকাশ হলে চার্জ কেটে জমা ধরুন <a onclick="chgSet()" style="cursor:pointer">⚙</a></label><div id="tfee" style="font-size:13px;color:var(--mu);margin-top:4px"></div>`:''}<input id="tn" placeholder="নোট (ঐচ্ছিক)"><small style="color:var(--mu)">📎 স্ক্রিনশট (প্রমাণ, ঐচ্ছিক)</small><input id="tsc" type="file" accept="image/*">
  <div class="warn" id="wn"></div>
- <button style="width:100%;margin-top:6px" onclick="addT()">${mode==='d'?'জমা করুন':'উত্তোলন করুন'}</button>
+ <button style="width:100%;margin-top:6px" onclick="addT()">${({d:'জমা করুন',w:'উত্তোলন করুন',l:'লিখে রাখুন'})[mode]}</button>
  <h3 style="margin:16px 0 0">লেনদেনের ইতিহাস</h3>
- ${p.tx.slice().reverse().map(x=>`<div class="tx"><div>${x.t==='d'?'জমা':'উত্তোলন'}<span>${fd(x.d)}${x.n?' · '+esc(x.n):''}</span></div><div><b class="${x.t==='d'?'in':'out'}">${x.t==='d'?'+':'−'}${tk(x.a)}</b> <a onclick="delT(${x.id})" style="cursor:pointer">🗑</a></div></div>`).join('')||'<p style="color:var(--mu)">এখনো কোনো লেনদেন নেই</p>'}
+ ${p.tx.slice().reverse().map(x=>`<div class="tx"><div>${lab(x)}<span>${fd(x.d)}${x.m?' · '+x.m:''}${x.c?' · টোটাল '+tk(x.g)+' − চার্জ '+tk(x.c):''}${x.n?' · '+esc(x.n):''}</span></div><div>${x.s?`<a onclick="showImg('t${x.id}','drawP()')" style="cursor:pointer">📎</a> `:''}<b class="${isIn(x)?'in':'out'}">${isIn(x)?'+':'−'}${tk(x.a)}</b> <a onclick="delT(${x.id})" style="cursor:pointer">🗑</a></div></div>`).join('')||'<p style="color:var(--mu)">এখনো কোনো লেনদেন নেই</p>'}
  <div class="tabs"><button class="g" onclick="copyS()">📋 হিসাব কপি</button><button class="g" onclick="delP()">ব্যক্তি মুছুন</button></div>`)}
-function addT(){const a=Math.round(+document.getElementById('ta').value);if(!(a>0))return;
- if(mode==='w'&&a>bal(cur)){const w=document.getElementById('wn');if(!w.dataset.ok){w.textContent='⚠ জমার চেয়ে বেশি! আবার চাপলে নিশ্চিত হবে।';w.dataset.ok=1;return}}
- cur.tx.push({id:Date.now(),t:mode,a,d:today(),n:document.getElementById('tn').value.trim()});note((mode==='d'?'➕ জমা: ':'➖ উত্তোলন: ')+cur.name+' '+tk(a)+'\nএখন মোট জমা: '+tk(bal(cur)));save();render();drawP()}
-function delT(id){if(!confirm('এই লেনদেন মুছবেন?'))return;note('🗑 লেনদেন মুছেছেন: '+cur.name);cur.tx=cur.tx.filter(x=>x.id!==id);save();render();drawP()}
+async function addT(){const g=+$('ta').value;if(!(g>0))return;const w=$('wn'),m=$('tmd').value;let a=g,c=0,who='',k='';
+ if(mode==='d'&&m==='বিকাশ'&&$('tbk').checked){c=calcFee(g);a=Math.round((g-c)*100)/100}
+ if(mode==='l'){who=$('twho').value.trim();if(!who){w.textContent='⚠ কে নিল, নামটা লিখুন';return}k=$('tkind').value}
+ if(mode!=='d'&&a>bal(cur)&&!w.dataset.ok){w.textContent='⚠ জমার চেয়ে বেশি! আবার চাপলে নিশ্চিত হবে।';w.dataset.ok=1;return}
+ const id=Date.now(),d=$('tdt').value||today(),f=$('tsc').files[0];let s=0,bl=null;
+ if(f){try{bl=await shrink(f);await imgPut('t'+id,bl);s=1}catch(e){}}
+ const x={id,t:mode,a,d,m,s,n:$('tn').value.trim()};if(c){x.g=g;x.c=c}if(who){x.who=who;x.k=k}
+ cur.tx.push(x);note(txMsg(cur,x),bl);save();render();drawP()}
+function delT(id){if(!confirm('এই লেনদেন মুছবেন?'))return;note('🗑 লেনদেন মুছেছেন: '+cur.name);imgDel('t'+id);cur.tx=cur.tx.filter(x=>x.id!==id&&x.lid!==id);save();render();drawP()}
 function delP(){if(!confirm(cur.name+' কে পুরো মুছবেন?'))return;note('🗑 ব্যক্তি মুছেছেন: '+cur.name);S.people=S.people.filter(p=>p!==cur);save();closeS();render()}
 function clearAll(){if(!confirm('নমুনা তথ্য মুছে নতুন করে শুরু করবেন?'))return;S={people:[],wifi:[],demo:false};save();render();wr()}
-function copyS(){const p=cur;const t=`${p.name} এর হিসাব\n`+p.tx.map(x=>`${fd(x.d)}: ${x.t==='d'?'জমা +':'উত্তোলন −'}${tk(x.a)}`).join('\n')+`\nমোট জমা: ${tk(bal(p))}`;
+function copyS(){const p=cur;const t=`${p.name} এর হিসাব\n`+p.tx.map(x=>`${fd(x.d)}: ${lab(x)} ${isIn(x)?'+':'−'}${tk(x.a)}`).join('\n')+`\nমোট জমা: ${tk(bal(p))}`;
  try{navigator.clipboard.writeText(t).then(()=>alert('কপি হয়েছে'))}catch(e){prompt('কপি করুন',t)}}
 const $=id=>document.getElementById(id);
 let tb='d',wm=today().slice(0,7),wfl='all',cw=null,uid=500;
@@ -135,25 +141,74 @@ function wd(){const c=cw,p=pay(c,wm),dm=[];
  show(`<div style="display:flex;justify-content:space-between"><h1>${esc(c.name)}</h1><button class="g" onclick="closeS();">✕</button></div>
  <div class="hero"><small>মাসিক বিল</small><b>${tk(c.fee)}</b></div>
  <h3 style="margin:14px 0 0">${ml(wm)}</h3>
- ${p?`<div class="demo"><span>✅ ${tk(p.a)} · ${fd(p.d)} তারিখে পরিশোধ</span></div>`:`<input id="pa" type="number" inputmode="numeric" value="${c.fee}"><input id="pd" type="date" value="${today()}"><button style="width:100%;margin-top:8px" onclick="payW()">বিল পেলাম</button>`}
+ ${p?`<div class="demo"><span>✅ ${tk(p.a)} · ${fd(p.d)} তারিখে পরিশোধ${p.m?' · '+p.m:''}</span>${p.s?`<a onclick="showImg('w${p.id}','wd()')" style="cursor:pointer">📎</a>`:''}</div>`:`<input id="pa" type="number" inputmode="numeric" value="${c.fee}"><small style="color:var(--mu)">পেমেন্টের তারিখ ও মাধ্যম</small><input id="pd" type="date" value="${today()}"><select id="pm">${MET}</select><small style="color:var(--mu)">📎 স্ক্রিনশট (প্রমাণ, ঐচ্ছিক)</small><input id="ps" type="file" accept="image/*"><button style="width:100%;margin-top:8px" onclick="payW()">বিল পেলাম</button>`}
  ${dm.length?`<div style="margin-top:12px;font-size:13px;color:var(--mu)">বাকি মাস (ট্যাপ করুন):</div>`+dm.map(k=>`<span class="chip" onclick="wm='${k}';wr();wd()">${ml(k)}</span>`).join(''):'<div style="margin-top:12px;font-size:13px" class="in">কোনো বকেয়া নেই 🎉</div>'}
  <h3 style="margin:16px 0 0">বিলের ইতিহাস</h3>
- ${c.pays.slice().sort((a,b)=>b.ym.localeCompare(a.ym)).map(x=>`<div class="tx"><div>${ml(x.ym)}<span>পরিশোধ: ${fd(x.d)}</span></div><div><b class="in">${tk(x.a)}</b> <a onclick="delPay(${x.id})" style="cursor:pointer">🗑</a></div></div>`).join('')||'<p style="color:var(--mu)">এখনো কোনো বিল নেওয়া হয়নি</p>'}
+ ${c.pays.slice().sort((a,b)=>b.ym.localeCompare(a.ym)).map(x=>`<div class="tx"><div>${ml(x.ym)}<span>পরিশোধ: ${fd(x.d)}${x.m?' · '+x.m:''}</span></div><div>${x.s?`<a onclick="showImg('w${x.id}','wd()')" style="cursor:pointer">📎</a> `:''}<b class="in">${tk(x.a)}</b> <a onclick="delPay(${x.id})" style="cursor:pointer">🗑</a></div></div>`).join('')||'<p style="color:var(--mu)">এখনো কোনো বিল নেওয়া হয়নি</p>'}
  <div class="tabs"><button class="g" onclick="editFee()">ফি বদলান</button><button class="g" onclick="delW()">গ্রাহক মুছুন</button></div>`)}
-function payW(){const a=Math.round(+$('pa').value),d=$('pd').value||today();if(!(a>0))return;cw.pays.push({id:Date.now(),ym:wm,a,d});note('📶 বিল পেলাম: '+cw.name+' · '+ml(wm)+' · '+tk(a)+' · '+fd(d));save();wr();wd()}
-function delPay(id){if(!confirm('এই বিল মুছবেন?'))return;note('🗑 বিল মুছেছেন: '+cw.name);cw.pays=cw.pays.filter(x=>x.id!==id);save();wr();wd()}
+async function payW(){const a=Math.round(+$('pa').value),d=$('pd').value||today();if(!(a>0))return;
+ const id=Date.now(),m=$('pm').value,f=$('ps').files[0];let s=0,bl=null;
+ if(f){try{bl=await shrink(f);await imgPut('w'+id,bl);s=1}catch(e){}}
+ cw.pays.push({id,ym:wm,a,d,m,s});note('📶 বিল পেলাম: '+cw.name+' · '+ml(wm)+' · '+tk(a)+'\n📅 '+fd(d)+' · 💳 '+m,bl);save();wr();wd()}
+function delPay(id){if(!confirm('এই বিল মুছবেন?'))return;note('🗑 বিল মুছেছেন: '+cw.name);imgDel('w'+id);cw.pays=cw.pays.filter(x=>x.id!==id);save();wr();wd()}
 function editFee(){const v=Math.round(+prompt('নতুন মাসিক বিল (টাকা)',cw.fee));if(v>0){cw.fee=v;save();wr();wd()}}
 function delW(){if(!confirm(cw.name+' কে মুছবেন?'))return;note('🗑 গ্রাহক মুছেছেন: '+cw.name);S.wifi=S.wifi.filter(c=>c!==cw);save();closeS();wr()}
 const bjson=()=>JSON.stringify(S);
 
+function sumHtml(p){const D=p.tx.filter(x=>x.t==='d'),g=D.reduce((a,x)=>a+(x.g||x.a),0),c=D.reduce((a,x)=>a+(x.c||0),0),rw='display:flex;justify-content:space-between';let h='';
+ if(D.length)h+=`<div class="demo" style="flex-direction:column;align-items:stretch;gap:4px"><div style="${rw}"><span>টোটাল পাঠিয়েছেন</span><b>${tk(g)}</b></div>${c?`<div style="${rw}"><span>বিকাশ চার্জ খরচ</span><b class="out">−${tk(c)}</b></div>`:''}<div style="${rw}"><span>জমা হয়েছে (অবশিষ্ট)</span><b class="in">${tk(g-c)}</b></div></div>`;
+ const T={};p.tx.filter(x=>x.t==='l'||x.t==='w').forEach(x=>{const n=x.t==='w'?'নিজে উত্তোলন':x.who,o=T[n]||(T[n]={n,k:x.t==='w'?'w':x.k,a:0,r:0});o.a+=x.a;o.r+=rpd(p,x.id)});
+ const R=Object.values(T);
+ if(R.length)h+='<h3 style="margin:14px 0 0">কে কত নিয়েছে</h3>'+R.map(o=>`<div class="tx"><div>${esc(o.n)} <small style="color:var(--mu)">${{l:'ঋণ',m:'আমার নেওয়া',f:'পরিবার',w:''}[o.k]}</small>${o.k==='f'||o.k==='w'?'':`<span>ফেরত ${tk(o.r)} · বাকি ${tk(o.a-o.r)}</span>`}</div><div><b class="out">−${tk(o.a)}</b></div></div>`).join('');
+ return h}
+const bal=p=>p.tx.reduce((s,x)=>s+(isIn(x)?x.a:-x.a),0);
+const isIn=x=>x.t==='d'||x.t==='r';
+const lab=x=>({d:'জমা',w:'উত্তোলন',l:esc(x.who||'')+(x.k==='f'?' নিলেন (পরিবার)':x.k==='m'?' নিল (আমার খরচ, ফেরত দেব)':' নিল (ঋণ)'),r:esc(x.who||'')+' ফেরত দিলেন'})[x.t];
+const rpd=(p,id)=>p.tx.filter(x=>x.t==='r'&&x.lid===id).reduce((s,x)=>s+x.a,0);
+const outs=(p,x)=>Math.round((x.a-rpd(p,x.id))*100)/100;
+const oweP=p=>p.tx.filter(x=>x.t==='l'&&x.k!=='f').reduce((s,x)=>s+outs(p,x),0);
+const TK=()=>[...new Set(S.people.flatMap(q=>q.tx.filter(x=>x.who).map(x=>x.who)))].map(w=>`<option value="${esc(w)}">`).join('');
+const CH=()=>S.set||{m:'k',r:18.5};
+const calcFee=g=>{const c=CH();return Math.round((c.m==='k'?g/1000*c.r:c.r)*100)/100};
+function chgSet(){const c=CH();const r=prompt('বিকাশ চার্জ কত টাকা? এখন: '+c.r+(c.m==='k'?' (প্রতি ১,০০০ টাকায়)':' (প্রতিবার)'),c.r);if(r===null)return;
+ const m=confirm('OK চাপলে: প্রতি ১,০০০ টাকায় এই চার্জ। Cancel চাপলে: প্রতিবার একবারে (ফ্ল্যাট)।');S.set={m:m?'k':'f',r:+r||c.r};save();fee()}
+function fee(){const e=$('tfee');if(!e)return;const g=+$('ta').value,on=$('tbk').checked&&$('tmd').value==='বিকাশ';
+ if(!on){e.textContent='';return}if(!(g>0)){e.textContent='টাকা লিখলে চার্জ দেখাবে';return}const c=calcFee(g);e.textContent='টোটাল '+tk(g)+' − চার্জ '+tk(c)+' = জমা হবে '+tk(g-c)}
+function txMsg(p,x){const H={d:'➕ জমা: ',w:'➖ উত্তোলন: ',l:x.k==='f'?'👪 নিলেন: ':x.k==='m'?'🙋 আমি নিলাম (ফেরত দেব): ':'🤝 ঋণ দিলাম: ',r:x.k==='m'?'↩ আমার নেওয়া টাকা জমা দিলাম: ':'↩ ঋণ ফেরত পেলাম: '}[x.t];
+ let t=H+(x.who||p.name)+' '+tk(x.a);
+ if(x.who&&x.t!=='r')t+='\n(জমাদাতা: '+p.name+')';if(x.t==='r')t+='\n(জমা হলো: '+p.name+' এর হিসাবে)';
+ if(x.c)t+='\n💸 টোটাল '+tk(x.g)+'\n➖ বিকাশ চার্জ '+tk(x.c)+'\n✅ জমা হলো '+tk(x.a);
+ t+='\n📅 '+fd(x.d)+(x.m?' · 💳 '+x.m:'')+'\n'+p.name+' এর বাকি জমা: '+tk(bal(p));
+ if((x.who&&x.k!=='f')||x.t==='r'){const o=p.tx.filter(y=>y.t==='l'&&y.k!=='f'&&y.who===x.who).reduce((s,y)=>s+outs(p,y),0);t+='\n'+x.who+' এর ঋণ বাকি: '+tk(o)}
+ return t}
+function openRep(id){const x=cur.tx.find(t=>t.id===id),o=outs(cur,x);
+ show(`<div style="display:flex;justify-content:space-between"><h1>${esc(x.who)} ${x.k==='m'?'জমা দিলেন':'ফেরত দিলেন'}</h1><button class="g" onclick="drawP()">←</button></div>
+ <div class="hero"><small>ঋণ বাকি (${esc(cur.name)} এর জমা থেকে)</small><b>${tk(o)}</b></div>
+ <input id="ra" type="number" inputmode="decimal" value="${o}"><small style="color:var(--mu)">তারিখ ও মাধ্যম</small><input id="rdt" type="date" value="${today()}"><select id="rmd">${MET}</select>
+ <small style="color:var(--mu)">📎 স্ক্রিনশট (ঐচ্ছিক)</small><input id="rsc" type="file" accept="image/*"><div class="warn" id="rwn"></div>
+ <button style="width:100%;margin-top:6px" onclick="repPay(${id})">${x.k==='m'?'জমা করলাম':'ফেরত নিলাম'}</button>`)}
+async function repPay(lid){const x=cur.tx.find(t=>t.id===lid),o=outs(cur,x),a=+$('ra').value;if(!(a>0))return;
+ if(a>o){$('rwn').textContent='⚠ বাকি ঋণের চেয়ে বেশি ('+tk(o)+')';return}
+ const id=Date.now(),f=$('rsc').files[0];let s=0,bl=null;if(f){try{bl=await shrink(f);await imgPut('t'+id,bl);s=1}catch(e){}}
+ const r={id,t:'r',a,d:$('rdt').value||today(),m:$('rmd').value,s,lid,who:x.who,k:x.k,n:''};cur.tx.push(r);
+ note(txMsg(cur,r),bl);save();render();drawP()}
+function rLoan(){const L=[];let T=0;S.people.forEach(p=>p.tx.filter(x=>x.t==='l'&&x.k!=='f'&&outs(p,x)>0).forEach(x=>{const o=outs(p,x);T+=o;L.push('• '+x.who+' '+tk(o)+' ('+p.name+' এর জমা থেকে, '+fd(x.d)+')')}));
+ sendR('🤝 ঋণ তালিকা\n'+(L.join('\n')||'কোনো ঋণ বাকি নেই 🎉')+'\n\nমোট বাইরে: '+tk(T))}
+const MET=['ক্যাশ','বিকাশ','নগদ','রকেট','ব্যাংক','অন্য'].map(m=>`<option>${m}</option>`).join('');
+const IDB=()=>new Promise((res,rej)=>{const r=indexedDB.open('amanot-img',1);r.onupgradeneeded=()=>r.result.createObjectStore('i');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+async function imgOp(m,k,v){const d=await IDB();return new Promise((res,rej)=>{const t=d.transaction('i',m==='get'?'readonly':'readwrite'),o=t.objectStore('i'),q=m==='get'?o.get(k):m==='put'?o.put(v,k):o.delete(k);t.oncomplete=()=>res(q.result);t.onerror=()=>rej(t.error)})}
+const imgPut=(k,v)=>imgOp('put',k,v),imgGet=k=>imgOp('get',k),imgDel=k=>imgOp('del',k).catch(()=>{});
+async function shrink(f){const b=await createImageBitmap(f),r=Math.min(1,1280/Math.max(b.width,b.height)),c=document.createElement('canvas');c.width=Math.round(b.width*r);c.height=Math.round(b.height*r);c.getContext('2d').drawImage(b,0,0,c.width,c.height);return new Promise(res=>c.toBlob(res,'image/jpeg',.72))}
+async function showImg(k,back){try{const b=await imgGet(k);if(!b){show(`<button class="g" onclick="${back}">← ফিরে যান</button><p>এই ফোনে ছবিটা নেই। ছবিটি আপনার টেলিগ্রাম চ্যাটে পাঠানো আছে।</p>`);return}
+ show(`<button class="g" onclick="${back}">← ফিরে যান</button><img src="${URL.createObjectURL(b)}" style="width:100%;border-radius:12px;margin-top:10px">`)}catch(e){}}
 const TG=()=>{try{return JSON.parse(localStorage.getItem('amanot_tg')||'{}')}catch(e){return{}}};
 const cs=t=>{$('cs').textContent=t};
 let bt=null;
 async function tgApi(m,body,form){const c=TG();if(!c.token||!c.chat)throw new Error('টেলিগ্রাম সেটিং দিন');
  const r=await fetch('https://api.telegram.org/bot'+c.token+'/'+m,form?{method:'POST',body}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
  const j=await r.json();if(!j.ok)throw new Error(j.description||'ত্রুটি');return j.result}
-function note(t){if(S.demo)return;const c=TG();if(!c.token||c.off)return;
- tgApi('sendMessage',{chat_id:c.chat,text:t}).then(()=>cs('🤖 টেলিগ্রামে পাঠানো হয়েছে ✓')).catch(()=>cs('⚠ টেলিগ্রামে পাঠানো যায়নি'))}
+function note(t,bl){if(S.demo)return;const c=TG();if(!c.token||c.off)return;
+ (bl?(()=>{const f=new FormData();f.append('chat_id',c.chat);f.append('caption',t);f.append('photo',bl,'proof.jpg');return tgApi('sendPhoto',f,true)})():tgApi('sendMessage',{chat_id:c.chat,text:t})).then(()=>cs('🤖 টেলিগ্রামে পাঠানো হয়েছে ✓')).catch(()=>cs('⚠ টেলিগ্রামে পাঠানো যায়নি'))}
 function bkSoon(){if(S.demo||!TG().token)return;clearTimeout(bt);bt=setTimeout(tgBackup,15000)}
 async function tgBackup(){bt=null;const c=TG();if(!c.token||S.demo)return;
  try{const f=new FormData();f.append('chat_id',c.chat);f.append('disable_notification','true');
@@ -171,14 +226,14 @@ function openT(){const c=TG();show(`<div style="display:flex;justify-content:spa
 <input id="tk" type="password" placeholder="বট টোকেন" value="${esc(c.token||'')}"><input id="tc" inputmode="numeric" placeholder="আপনার Chat ID" value="${esc(c.chat||'')}">
 <label style="display:block;margin-top:10px;font-size:14px"><input id="to" type="checkbox" style="width:auto;margin:0 6px 0 0" ${c.off?'':'checked'}>প্রতিটি লেনদেনের মেসেজ আসুক</label>
 <button style="width:100%;margin-top:10px" onclick="tgSave()">সেভ ও টেস্ট</button>
-<div class="tabs"><button class="g" onclick="rDay()">📊 আজকের রিপোর্ট</button><button class="g" onclick="rDue()">📶 বকেয়া তালিকা</button></div>
+<div class="tabs"><button class="g" onclick="rDay()">📊 আজকের</button><button class="g" onclick="rDue()">📶 বকেয়া</button><button class="g" onclick="rLoan()">🤝 ঋণ</button></div>
 <div class="tabs"><button class="g" onclick="tgBackup().then(()=>{$('tm').textContent=$('cs').textContent})">📦 এখনই ব্যাকআপ</button><button class="g" onclick="tgRestore()">⬇ ফেরত আনুন</button></div>
 <div class="warn" id="tm"></div>`)}
 async function tgSave(){localStorage.setItem('amanot_tg',JSON.stringify({token:$('tk').value.trim(),chat:$('tc').value.trim(),off:!$('to').checked}));
  try{await tgApi('sendMessage',{chat_id:TG().chat,text:'✅ আমানত হিসাব টেলিগ্রামের সাথে যুক্ত হয়েছে'});$('tm').textContent='✅ সংযুক্ত! টেলিগ্রামে মেসেজ দেখুন'}catch(e){$('tm').textContent='⚠ '+e.message}}
 function sendR(t){tgApi('sendMessage',{chat_id:TG().chat,text:t}).then(()=>{$('tm').textContent='✅ পাঠানো হয়েছে'}).catch(e=>{$('tm').textContent='⚠ '+e.message})}
 function rDay(){const t=today();let L=[],i=0,o=0,w=0;
- S.people.forEach(p=>p.tx.forEach(x=>{if(x.d===t){x.t==='d'?i+=x.a:o+=x.a;L.push((x.t==='d'?'➕ ':'➖ ')+p.name+' '+tk(x.a))}}));
+ S.people.forEach(p=>p.tx.forEach(x=>{if(x.d===t){const inn=isIn(x);inn?i+=x.a:o+=x.a;L.push((inn?'➕ ':'➖ ')+(x.who||p.name)+' '+tk(x.a))}}));
  S.wifi.forEach(c=>c.pays.forEach(x=>{if(x.d===t){w+=x.a;L.push('📶 '+c.name+' '+tk(x.a))}}));
  sendR('📊 আজকের রিপোর্ট ('+fd(t)+')\n'+(L.join('\n')||'কোনো লেনদেন নেই')+'\n\nজমা: '+tk(i)+' | উত্তোলন: '+tk(o)+' | ওয়াইফাই আদায়: '+tk(w)+'\nমোট আমানত: '+tk(S.people.reduce((a,p)=>a+bal(p),0)))}
 function rDue(){const L=S.wifi.filter(c=>c.since<=wm&&!pay(c,wm));
